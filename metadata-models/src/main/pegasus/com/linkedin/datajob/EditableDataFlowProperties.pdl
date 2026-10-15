@@ -16,7 +16,8 @@ record EditableDataFlowProperties includes ChangeAuditStamps {
   @Searchable = {
     "fieldType": "TEXT",
     "fieldName": "editedDescription",
-    "sanitizeRichText": true
+    "sanitizeRichText": true,
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 }

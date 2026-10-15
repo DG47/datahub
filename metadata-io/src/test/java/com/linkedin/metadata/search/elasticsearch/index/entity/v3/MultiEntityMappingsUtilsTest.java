@@ -34,7 +34,7 @@ public class MultiEntityMappingsUtilsTest {
 
     assertEquals(result.size(), 2);
     assertEquals(result.get(TYPE), ALIAS_FIELD_TYPE);
-    assertEquals(result.get(PATH), "_search.entityName");
+    assertEquals(result.get(PATH), "name");
   }
 
   @Test
@@ -52,7 +52,7 @@ public class MultiEntityMappingsUtilsTest {
 
     assertEquals(result.size(), 2);
     assertEquals(result.get(TYPE), ALIAS_FIELD_TYPE);
-    assertEquals(result.get(PATH), "_search.qualifiedName");
+    assertEquals(result.get(PATH), "qualifiedName");
   }
 
   @Test
@@ -252,6 +252,8 @@ public class MultiEntityMappingsUtilsTest {
 
     when(annotation.getSearchLabel()).thenReturn(Optional.ofNullable(searchLabel));
     when(annotation.getEntityFieldName()).thenReturn(Optional.ofNullable(entityFieldName));
+    when(annotation.isV3Searchable()).thenReturn(true);
+    when(annotation.resolvedForV3()).thenReturn(annotation);
     when(annotation.getEagerGlobalOrdinals()).thenReturn(Optional.ofNullable(eagerGlobalOrdinals));
     when(annotation.getFieldNameAliases())
         .thenReturn(
@@ -479,6 +481,8 @@ public class MultiEntityMappingsUtilsTest {
     when(annotation.getFieldType()).thenReturn(fieldType);
     when(annotation.getFieldName()).thenReturn(fieldName);
     when(annotation.getSearchIndexed()).thenReturn(Optional.ofNullable(searchIndexed));
+    when(annotation.isV3Searchable()).thenReturn(true);
+    when(annotation.resolvedForV3()).thenReturn(annotation);
 
     SearchableFieldSpec fieldSpec = mock(SearchableFieldSpec.class);
     when(fieldSpec.getSearchableAnnotation()).thenReturn(annotation);
@@ -531,6 +535,8 @@ public class MultiEntityMappingsUtilsTest {
     when(annotation.getSearchLabel()).thenReturn(Optional.ofNullable(searchLabel));
     when(annotation.getEntityFieldName()).thenReturn(Optional.ofNullable(entityFieldName));
     when(annotation.getSearchIndexed()).thenReturn(Optional.empty());
+    when(annotation.isV3Searchable()).thenReturn(true);
+    when(annotation.resolvedForV3()).thenReturn(annotation);
 
     SearchableFieldSpec fieldSpec = mock(SearchableFieldSpec.class);
     when(fieldSpec.getSearchableAnnotation()).thenReturn(annotation);

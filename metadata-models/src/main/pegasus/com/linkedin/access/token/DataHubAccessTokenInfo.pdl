@@ -15,7 +15,9 @@ record DataHubAccessTokenInfo {
    * User defined name for the access token if defined.
    */
   @Searchable = {
-   "fieldType": "TEXT_PARTIAL"
+   "fieldType": "TEXT_PARTIAL",
+   "boostScore": 10.0,
+   "v3": { "searchLabel": "name" }
   }
   name: string
 

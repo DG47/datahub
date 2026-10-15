@@ -20,7 +20,8 @@ record AgentSkillInfo {
     "fieldType": "WORD_GRAM",
     "enableAutocomplete": true,
     "boostScore": 10.0,
-    "fieldNameAliases": [ "_entityName" ]
+    "fieldNameAliases": [ "_entityName" ],
+    "v3": { "searchLabel": "name" }
   }
   name: string
 
@@ -29,7 +30,8 @@ record AgentSkillInfo {
    */
   @Searchable = {
     "fieldType": "TEXT",
-    "hasValuesFieldName": "hasDescription"
+    "hasValuesFieldName": "hasDescription",
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 

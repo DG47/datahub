@@ -16,7 +16,8 @@ record EditableERModelRelationshipProperties includes ChangeAuditStamps {
    */
   @Searchable = {
     "fieldType": "TEXT",
-    "fieldName": "editedDescription"
+    "fieldName": "editedDescription",
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 
@@ -26,6 +27,8 @@ record EditableERModelRelationshipProperties includes ChangeAuditStamps {
   @Searchable = {
     "fieldType": "TEXT_PARTIAL",
     "fieldName": "editedName",
+    "boostScore": 10.0,
+    "v3": { "searchLabel": "name" }
   }
   name: optional string
 }

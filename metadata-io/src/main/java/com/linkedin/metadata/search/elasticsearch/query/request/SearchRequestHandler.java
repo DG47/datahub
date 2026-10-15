@@ -117,7 +117,7 @@ public class SearchRequestHandler extends BaseRequestHandler {
 
   private final SearchServiceConfiguration searchServiceConfig;
   private final SearchQueryBuilder searchQueryBuilder;
-  // Set when keyword reads go to Search V3, whose full-text query reads the shared _search fields
+  // Set when keyword reads go to Search V3, whose full-text query reads the shared root fields
   @Nullable private final V3SearchQueryBuilder v3SearchQueryBuilder;
   // Words shorter than this are dropped by the analyzers, so they never match on V3
   private final int v3MinWordLength;

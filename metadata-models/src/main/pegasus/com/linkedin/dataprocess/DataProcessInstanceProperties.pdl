@@ -11,7 +11,7 @@ import com.linkedin.common.DataJobUrn
  * The inputs and outputs of this data process
  */
 @Aspect = {
-  "name": "dataProcessInstanceProperties",
+  "name": "dataProcessInstanceProperties"
 }
 record DataProcessInstanceProperties includes CustomProperties, ExternalReference {
 
@@ -21,7 +21,8 @@ record DataProcessInstanceProperties includes CustomProperties, ExternalReferenc
   @Searchable = {
     "fieldType": "WORD_GRAM",
     "enableAutocomplete": true,
-    "boostScore": 10.0
+    "boostScore": 10.0,
+    "v3": { "searchLabel": "name" }
   }
   name: string
 

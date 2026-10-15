@@ -11,7 +11,9 @@ record TestInfo {
     * The name of the test
     */
     @Searchable = {
-      "fieldType": "TEXT_PARTIAL"
+      "fieldType": "TEXT_PARTIAL",
+      "boostScore": 10.0,
+      "v3": { "searchLabel": "name" }
     }
     name: string
 
@@ -27,7 +29,8 @@ record TestInfo {
      * Description of the test
      */
      @Searchable = {
-       "fieldType": "TEXT"
+       "fieldType": "TEXT",
+       "v3": { "searchLabel": "description" }
      }
     description: optional string
 

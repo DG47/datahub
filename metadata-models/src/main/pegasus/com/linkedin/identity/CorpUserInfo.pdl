@@ -32,7 +32,7 @@ record CorpUserInfo includes CustomProperties {
     "enableAutocomplete": true,
     "boostScore": 10.0,
     "fieldNameAliases": [ "_entityName" ],
-    "searchLabel": "entityName"
+    "v3": { "searchLabel": "name" }
   }
   displayName: optional string
 

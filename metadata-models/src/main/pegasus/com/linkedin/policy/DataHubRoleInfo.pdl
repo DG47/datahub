@@ -13,7 +13,9 @@ record DataHubRoleInfo {
    * Name of the Role
    */
   @Searchable = {
-    "fieldType": "TEXT_PARTIAL"
+    "fieldType": "TEXT_PARTIAL",
+    "boostScore": 10.0,
+    "v3": { "searchLabel": "name" }
   }
   name: string
 
@@ -21,7 +23,8 @@ record DataHubRoleInfo {
    * Description of the Role
    */
   @Searchable = {
-    "fieldType": "TEXT"
+    "fieldType": "TEXT",
+    "v3": { "searchLabel": "description" }
   }
   description: string
 

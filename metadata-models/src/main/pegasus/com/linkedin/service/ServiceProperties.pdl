@@ -26,7 +26,8 @@ record ServiceProperties includes CustomProperties {
     "fieldType": "WORD_GRAM",
     "enableAutocomplete": true,
     "boostScore": 10.0,
-    "fieldNameAliases": [ "_entityName" ]
+    "fieldNameAliases": [ "_entityName" ],
+    "v3": { "searchLabel": "name" }
   }
   displayName: string
 
@@ -35,7 +36,8 @@ record ServiceProperties includes CustomProperties {
    */
   @Searchable = {
     "fieldType": "TEXT",
-    "hasValuesFieldName": "hasDescription"
+    "hasValuesFieldName": "hasDescription",
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 

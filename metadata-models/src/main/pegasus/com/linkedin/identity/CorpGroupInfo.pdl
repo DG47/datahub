@@ -24,7 +24,7 @@ record CorpGroupInfo {
     "enableAutocomplete": true,
     "boostScore": 10.0,
     "fieldNameAliases": [ "_entityName" ],
-    "searchLabel": "entityName"
+    "v3": { "searchLabel": "name" }
   }
   displayName: optional string
 
@@ -71,7 +71,8 @@ record CorpGroupInfo {
    * A description of the group.
    */
   @Searchable = {
-    "fieldType": "TEXT_PARTIAL"
+    "fieldType": "TEXT_PARTIAL",
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 
@@ -81,14 +82,14 @@ record CorpGroupInfo {
   slack: optional string
 
   /**
-   * Created Audit stamp
+   * When this group was created in DataHub.
    */
-   @Searchable = {
-     "/time": {
+  @deprecated = "Use systemMetadata.aspectCreated instead."
+  @Searchable = {
+    "/time": {
       "fieldName": "createdTime",
-      "fieldType": "DATETIME",
-      "searchLabel": "createdAt"
-     }
-   }
-   created: optional AuditStamp
+      "fieldType": "DATETIME"
+    }
+  }
+  created: optional AuditStamp
 }

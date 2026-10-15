@@ -26,7 +26,8 @@ record DataHubConnectionDetails {
   @Searchable = {
     "fieldType": "TEXT_PARTIAL",
     "enableAutocomplete": true,
-    "boostScore": 10.0
+    "boostScore": 10.0,
+    "v3": { "searchLabel": "name" }
   }
   name: optional string
 

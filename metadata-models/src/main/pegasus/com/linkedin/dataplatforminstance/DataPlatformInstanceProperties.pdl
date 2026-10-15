@@ -20,7 +20,7 @@ record DataPlatformInstanceProperties includes CustomProperties, ExternalReferen
     "enableAutocomplete": true,
     "boostScore": 10.0,
     "fieldNameAliases": [ "_entityName" ],
-    "searchLabel": "entityName"
+    "v3": { "searchLabel": "name" }
   }
   name: optional string
 
@@ -29,7 +29,8 @@ record DataPlatformInstanceProperties includes CustomProperties, ExternalReferen
    */
   @Searchable = {
     "fieldType": "TEXT",
-    "hasValuesFieldName": "hasDescription"
+    "hasValuesFieldName": "hasDescription",
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 }

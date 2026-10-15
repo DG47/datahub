@@ -15,7 +15,9 @@ record DataHubIngestionSourceInfo {
    * The display name of the ingestion source
    */
   @Searchable = {
-   "fieldType": "TEXT_PARTIAL"
+   "fieldType": "TEXT_PARTIAL",
+   "boostScore": 10.0,
+   "v3": { "searchLabel": "name" }
   }
   name: string
 

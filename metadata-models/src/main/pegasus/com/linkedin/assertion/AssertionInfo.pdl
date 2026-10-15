@@ -89,7 +89,8 @@ record AssertionInfo includes CustomProperties, ExternalReference {
       "fieldName": "assertionDescription",
       "fieldType": "TEXT",
       "hasValuesFieldName": "hasAssertionDescription",
-      "sanitizeRichText": true
+      "sanitizeRichText": true,
+      "v3": { "searchLabel": "description" }
   }
     description: optional string
 

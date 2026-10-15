@@ -26,7 +26,7 @@ record DashboardInfo includes CustomProperties, ExternalReference {
     "enableAutocomplete": true,
     "boostScore": 10.0,
     "fieldNameAliases": [ "_entityName" ],
-    "searchLabel": "entityName"
+    "v3": { "searchLabel": "name" }
   }
   title: string
 
@@ -36,7 +36,8 @@ record DashboardInfo includes CustomProperties, ExternalReference {
   @Searchable = {
     "fieldType": "TEXT",
     "hasValuesFieldName": "hasDescription",
-    "sanitizeRichText": true
+    "sanitizeRichText": true,
+    "v3": { "searchLabel": "description" }
   }
   description: string
 
@@ -129,7 +130,7 @@ record DashboardInfo includes CustomProperties, ExternalReference {
     "/lastModified/time": {
       "fieldName": "lastModifiedAt",
          "fieldType": "DATETIME",
-         "searchLabel": "lastModifiedAt"
+         "v3": { "searchLabel": "lastModifiedAt" }
        }
      }
   lastModified: ChangeAuditStamps

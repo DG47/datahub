@@ -14,7 +14,8 @@ record StructuredPropertyDefinition {
     */
     @Searchable = {
       "fieldType": "KEYWORD",
-      "searchLabel": "qualifiedName"
+      "boostScore": 10.0,
+      "v3": { "searchLabel": "qualifiedName" }
     }
     qualifiedName: string
 
@@ -24,7 +25,8 @@ record StructuredPropertyDefinition {
     @Searchable = {
       "enableAutocomplete": true,
       "fieldType": "WORD_GRAM",
-      "searchLabel": "entityName"
+      "boostScore": 10.0,
+      "v3": { "searchLabel": "name" }
       }
     displayName: optional string
 
@@ -124,25 +126,25 @@ record StructuredPropertyDefinition {
     version: optional string
 
     /**
-      * Created Audit stamp
-      */
+     * When this property definition was created in DataHub.
+     */
+    @deprecated = "Use systemMetadata.aspectCreated instead."
     @Searchable = {
       "/time": {
         "fieldName": "createdTime",
-        "fieldType": "DATETIME",
-        "searchLabel": "createdAt"
+        "fieldType": "DATETIME"
       }
     }
     created: optional AuditStamp
 
     /**
-     * Last Modified Audit stamp
+     * When this property definition was last modified in DataHub.
      */
+    @deprecated = "Use systemMetadata.aspectModified instead."
     @Searchable = {
       "/time": {
-       "fieldName": "lastModified",
-       "fieldType": "DATETIME",
-       "searchLabel": "lastModifiedAt"
+        "fieldName": "lastModified",
+        "fieldType": "DATETIME"
       }
     }
     lastModified: optional AuditStamp

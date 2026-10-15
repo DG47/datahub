@@ -11,11 +11,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import lombok.AllArgsConstructor;
 import lombok.Value;
 import org.apache.commons.lang3.EnumUtils;
 
 /** Simple object representation of the @Searchable annotation metadata. */
 @Value
+@AllArgsConstructor
 public class SearchableAnnotation {
 
   public static final String FIELD_NAME_ALIASES = "fieldNameAliases";
@@ -82,6 +84,104 @@ public class SearchableAnnotation {
   // Whether to sanitize rich text content (HTML, Markdown, base64 images) before indexing
   // This prevents indexing failures due to term size limits and improves search relevance
   boolean sanitizeRichText;
+
+  // V3-only overrides. Absent means V3 uses the top-level annotation. V2 never reads these.
+  boolean v3Searchable;
+
+  Optional<String> v3SearchLabel;
+
+  Optional<Boolean> v3IncludeSystemModifiedAt;
+
+  /**
+   * Constructor for annotations with no V3 overlay. V3 searches the field with the top-level
+   * settings.
+   */
+  public SearchableAnnotation(
+      String fieldName,
+      FieldType fieldType,
+      boolean queryByDefault,
+      boolean enableAutocomplete,
+      boolean addToFilters,
+      boolean addHasValuesToFilters,
+      Optional<String> filterNameOverride,
+      Optional<String> hasValuesFilterNameOverride,
+      double boostScore,
+      Optional<String> hasValuesFieldName,
+      Optional<String> numValuesFieldName,
+      Map<Object, Double> weightsPerFieldValue,
+      List<String> fieldNameAliases,
+      boolean includeQueryEmptyAggregation,
+      boolean includeSystemModifiedAt,
+      Optional<String> systemModifiedAtFieldName,
+      Optional<String> searchLabel,
+      Optional<Boolean> searchIndexed,
+      Optional<String> entityFieldName,
+      Optional<Boolean> eagerGlobalOrdinals,
+      boolean sanitizeRichText) {
+    this(
+        fieldName,
+        fieldType,
+        queryByDefault,
+        enableAutocomplete,
+        addToFilters,
+        addHasValuesToFilters,
+        filterNameOverride,
+        hasValuesFilterNameOverride,
+        boostScore,
+        hasValuesFieldName,
+        numValuesFieldName,
+        weightsPerFieldValue,
+        fieldNameAliases,
+        includeQueryEmptyAggregation,
+        includeSystemModifiedAt,
+        systemModifiedAtFieldName,
+        searchLabel,
+        searchIndexed,
+        entityFieldName,
+        eagerGlobalOrdinals,
+        sanitizeRichText,
+        true,
+        Optional.empty(),
+        Optional.empty());
+  }
+
+  /**
+   * The annotation Search V3 indexes. {@code searchLabel} belongs on the {@code v3} object. A
+   * top-level {@code searchLabel} is still accepted when {@code v3} does not set one. The overlay
+   * can also turn the system-modified sidecar off or drop the field from V3 search.
+   */
+  @Nonnull
+  public SearchableAnnotation resolvedForV3() {
+    if (v3Searchable && v3SearchLabel.isEmpty() && v3IncludeSystemModifiedAt.isEmpty()) {
+      return this;
+    }
+    final boolean includeModified = v3IncludeSystemModifiedAt.orElse(includeSystemModifiedAt);
+    return new SearchableAnnotation(
+        fieldName,
+        fieldType,
+        queryByDefault,
+        enableAutocomplete,
+        addToFilters,
+        addHasValuesToFilters,
+        filterNameOverride,
+        hasValuesFilterNameOverride,
+        boostScore,
+        hasValuesFieldName,
+        numValuesFieldName,
+        weightsPerFieldValue,
+        fieldNameAliases,
+        includeQueryEmptyAggregation,
+        includeModified,
+        includeModified ? systemModifiedAtFieldName : Optional.empty(),
+        v3SearchLabel.isPresent() ? v3SearchLabel : searchLabel,
+        searchIndexed,
+        entityFieldName,
+        eagerGlobalOrdinals,
+        sanitizeRichText,
+        v3Searchable,
+        Optional.empty(),
+        Optional.empty());
+  }
 
   public enum FieldType {
     KEYWORD,
@@ -154,6 +254,17 @@ public class SearchableAnnotation {
         AnnotationUtils.getField(map, "systemModifiedAtFieldName", String.class);
 
     final Optional<String> searchLabel = AnnotationUtils.getField(map, "searchLabel", String.class);
+    final Optional<Map> v3Overlay = AnnotationUtils.getField(map, "v3", Map.class);
+    final boolean v3Searchable =
+        v3Overlay
+            .flatMap(overlay -> AnnotationUtils.getField(overlay, "enabled", Boolean.class))
+            .orElse(true);
+    final Optional<String> v3SearchLabel =
+        v3Overlay.flatMap(
+            overlay -> AnnotationUtils.getField(overlay, "searchLabel", String.class));
+    final Optional<Boolean> v3IncludeSystemModifiedAt =
+        v3Overlay.flatMap(
+            overlay -> AnnotationUtils.getField(overlay, "includeSystemModifiedAt", Boolean.class));
     final Optional<Boolean> searchIndexed =
         AnnotationUtils.getField(map, "searchIndexed", Boolean.class);
     final Optional<String> entityFieldName =
@@ -166,6 +277,7 @@ public class SearchableAnnotation {
     // Validate new fields
     validateSearchIndexed(searchIndexed, resolvedFieldType, context);
     validateElasticsearchFieldName(searchLabel, "searchLabel", context);
+    validateElasticsearchFieldName(v3SearchLabel, "searchLabel", context);
     validateElasticsearchFieldName(entityFieldName, "entityFieldName", context);
     validateEagerGlobalOrdinals(eagerGlobalOrdinals, resolvedFieldType, context);
     validateSanitizeRichText(sanitizeRichText, resolvedFieldType, context);
@@ -191,7 +303,10 @@ public class SearchableAnnotation {
         searchIndexed,
         entityFieldName,
         eagerGlobalOrdinals,
-        sanitizeRichText.orElse(false));
+        sanitizeRichText.orElse(false),
+        v3Searchable,
+        v3SearchLabel,
+        v3IncludeSystemModifiedAt);
   }
 
   private static FieldType getFieldType(

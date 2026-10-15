@@ -19,7 +19,8 @@ record ERModelRelationshipProperties includes CustomProperties {
   @Searchable = {
     "fieldType": "TEXT_PARTIAL",
     "enableAutocomplete": true,
-    "boostScore": 10.0
+    "boostScore": 10.0,
+    "v3": { "searchLabel": "name" }
   }
   name: string
 
@@ -63,7 +64,8 @@ record ERModelRelationshipProperties includes CustomProperties {
   @Searchable = {
     "/time": {
       "fieldName": "createdAt",
-      "fieldType": "DATETIME"
+      "fieldType": "DATETIME",
+      "v3": { "searchLabel": "createdAt" }
     }
   }
   created: optional AuditStamp
@@ -74,7 +76,8 @@ record ERModelRelationshipProperties includes CustomProperties {
   @Searchable = {
     "/time": {
       "fieldName": "lastModifiedAt",
-      "fieldType": "DATETIME"
+      "fieldType": "DATETIME",
+      "v3": { "searchLabel": "lastModifiedAt" }
     }
   }
   lastModified: optional AuditStamp

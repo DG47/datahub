@@ -11,6 +11,7 @@ import com.linkedin.metadata.config.search.custom.SearchFields;
 import com.linkedin.metadata.models.EntitySpec;
 import com.linkedin.metadata.models.registry.EntityRegistry;
 import com.linkedin.metadata.search.elasticsearch.index.entity.v2.V2MappingsBuilder;
+import com.linkedin.metadata.search.elasticsearch.index.entity.v3.MappingConstants;
 import com.linkedin.metadata.search.elasticsearch.index.entity.v3.V3SearchFields;
 import io.datahubproject.metadata.context.OperationContext;
 import java.util.Collection;
@@ -133,13 +134,19 @@ public class V3SearchQueryBuilder extends SearchQueryBuilder {
                 root -> destinations.computeIfAbsent(root, k -> new HashSet<>()).add(name)));
     return fields.stream()
         .filter(
-            field ->
-                field.fieldName().startsWith(V3SearchFields.path(""))
-                    ? selected.containsKey(baseName(field.fieldName()))
-                    : destinations
-                        .getOrDefault(field.fieldName(), Set.of(V3SearchFields.OTHER))
-                        .stream()
-                        .anyMatch(selected::containsKey))
+            field -> {
+              final String name = baseName(field.fieldName());
+              // A shared field (name.text, or _search.structuredProperties.text) is selected only
+              // by its own name. A source field is selected when a shared field it feeds is.
+              if (!field.fieldName().equals(name)) {
+                return selected.containsKey(name);
+              }
+              if (selected.containsKey(name)) {
+                return true;
+              }
+              return destinations.getOrDefault(name, Set.of(V3SearchFields.OTHER)).stream()
+                  .anyMatch(selected::containsKey);
+            })
         .collect(Collectors.toSet());
   }
 
@@ -171,8 +178,8 @@ public class V3SearchQueryBuilder extends SearchQueryBuilder {
 
   /**
    * The root fields of these standard fields that a V3 index searches, and the analyzed subfields
-   * of its shared fields. A root field has no analyzed subfields on V3, and a URN root field holds
-   * the whole urn: {@code _search.other} searches its parts.
+   * of its shared fields. A root field that is not a shared label has no analyzed subfields on V3,
+   * and a URN root field holds the whole urn: the root field {@code other} searches its parts.
    */
   @Nonnull
   private Set<SearchFieldConfig> withSharedFields(
@@ -307,7 +314,7 @@ public class V3SearchQueryBuilder extends SearchQueryBuilder {
 
   @Nonnull
   private static String baseName(@Nonnull final String configuredName) {
-    final String prefix = V3SearchFields.path("");
+    final String prefix = MappingConstants.SEARCH_FIELD_NAME + ".";
     final String name =
         configuredName.startsWith(prefix)
             ? configuredName.substring(prefix.length())

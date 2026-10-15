@@ -28,7 +28,8 @@ record LifecycleStageTypeInfo {
   @Searchable = {
     "fieldType": "WORD_GRAM",
     "enableAutocomplete": true,
-    "boostScore": 10.0
+    "boostScore": 10.0,
+    "v3": { "searchLabel": "name" }
   }
   name: string
 

@@ -24,7 +24,7 @@ record ChartInfo includes CustomProperties, ExternalReference {
     "enableAutocomplete": true,
     "boostScore": 10.0,
     "fieldNameAliases": [ "_entityName" ],
-    "searchLabel": "entityName"
+    "v3": { "searchLabel": "name" }
   }
   title: string
 
@@ -32,6 +32,7 @@ record ChartInfo includes CustomProperties, ExternalReference {
    * Detailed description about the chart
    */
   @Searchable = {
+    "v3": { "searchLabel": "description" }
   }
   description: string
 
@@ -41,7 +42,8 @@ record ChartInfo includes CustomProperties, ExternalReference {
   @Searchable = {
     "/lastModified/time": {
       "fieldName": "lastModifiedAt",
-      "fieldType": "DATETIME"
+      "fieldType": "DATETIME",
+      "v3": { "searchLabel": "lastModifiedAt" }
     }
   }
   lastModified: ChangeAuditStamps

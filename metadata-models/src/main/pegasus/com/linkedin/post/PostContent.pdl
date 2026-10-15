@@ -11,7 +11,9 @@ record PostContent {
    * Title of the post.
    */
   @Searchable = {
-    "fieldType": "TEXT_PARTIAL"
+    "fieldType": "TEXT_PARTIAL",
+    "boostScore": 10.0,
+    "v3": { "searchLabel": "name" }
   }
   title: string
 

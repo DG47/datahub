@@ -23,6 +23,7 @@ record MLModelGroupProperties includes CustomProperties, MLModelLineageInfo, Ext
     "enableAutocomplete": true,
     "boostScore": 10.0,
     "queryByDefault": true,
+    "v3": { "searchLabel": "name" }
   }
   name: optional string
 
@@ -31,7 +32,8 @@ record MLModelGroupProperties includes CustomProperties, MLModelLineageInfo, Ext
    */
   @Searchable = {
     "fieldType": "TEXT",
-    "hasValuesFieldName": "hasDescription"
+    "hasValuesFieldName": "hasDescription",
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 

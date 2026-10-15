@@ -408,7 +408,8 @@ public abstract class KeywordSearchV3TestBase extends AbstractTestNGSpringContex
                     new DatasetProperties()
                         .setName("customers")
                         .setDescription(CUSTOMERS_DESCRIPTION),
-                    // editedName is not query-by-default text
+                    // editedName shares the name label, so full text and a name-only
+                    // configuration both match it
                     new EditableDatasetProperties().setName("quarterly ledger"),
                     // owners is not queried by default
                     new Ownership()
@@ -1262,7 +1263,7 @@ public abstract class KeywordSearchV3TestBase extends AbstractTestNGSpringContex
             List.of());
     assertTrue(explain.isMatch());
     String explanation = explain.getExplanation().toString();
-    assertTrue(explanation.contains("_search.description.text:customer"), explanation);
+    assertTrue(explanation.contains("description.text:customer"), explanation);
     assertFalse(explanation.contains("description.keyword"), explanation);
   }
 
@@ -1620,8 +1621,8 @@ public abstract class KeywordSearchV3TestBase extends AbstractTestNGSpringContex
 
   /**
    * The fieldConfiguration search flag picks the fields a custom search configuration queries. On
-   * V3 a configured field stands for the shared field it feeds: name selects the whole entityName
-   * field.
+   * V3 a configured name selects the root name field, which the ingested name and the edited name
+   * both copy into.
    */
   @Test
   public void testFieldConfigurationSelectsSearchedFields() throws IOException {
@@ -1663,9 +1664,9 @@ public abstract class KeywordSearchV3TestBase extends AbstractTestNGSpringContex
     assertUrns(search.apply(fulltext, "billing"), CUSTOMERS);
     assertUrns(search.apply(nameOnly, "billing"));
     assertUrns(search.apply(nameOnly, "orders"), ORDERS);
-    // The edited name is searched by default, but it is not the name, as on V2
+    // The edited name shares the name label, so a name-only configuration matches it
     assertUrns(search.apply(fulltext, "ledger"), CUSTOMERS);
-    assertUrns(search.apply(nameOnly, "ledger"));
+    assertUrns(search.apply(nameOnly, "ledger"), CUSTOMERS);
   }
 
   @Test
@@ -1706,19 +1707,35 @@ public abstract class KeywordSearchV3TestBase extends AbstractTestNGSpringContex
   }
 
   /**
-   * Root fields are normalized keywords for filters, facets and sorts, without V2's analyzed
-   * subfields. Full text lives in the shared _search fields: a word and a stemmed subfield on every
-   * one, and ngrams only on autocomplete.
+   * Root fields that are not shared labels are normalized keywords for filters, facets and sorts,
+   * without V2's analyzed subfields. Full text lives on the root field its label names: {@code
+   * text} and {@code stemmed} on each one, a case-preserving {@code keyword} on {@code name}, and
+   * ngrams only on {@code autocomplete}. {@code _search} keeps system metadata.
    */
   @Test
   @SuppressWarnings("unchecked")
   public void testOnlySharedSearchFieldsAreAnalyzed() throws IOException {
     Map<String, Object> properties = getMappedProperties(DATASET_ENTITY_NAME);
-    for (String root : List.of("name", "description")) {
-      Map<String, Object> mapping = (Map<String, Object>) properties.get(root);
-      assertEquals(mapping.get("type"), "keyword", root);
-      assertEquals(((Map<String, Object>) mapping.get("fields")).keySet(), Set.of("keyword"), root);
-    }
+    Map<String, Object> name = (Map<String, Object>) properties.get("name");
+    assertEquals(name.get("type"), "keyword");
+    Map<String, Object> nameFields = (Map<String, Object>) name.get("fields");
+    assertEquals(nameFields.keySet(), Set.of("text", "stemmed", "keyword"));
+    assertEquals(((Map<String, Object>) nameFields.get("text")).get("analyzer"), "v3_text");
+    // The name keeps its stored casing for case-sensitive exact match
+    assertFalse(((Map<String, Object>) nameFields.get("keyword")).containsKey("normalizer"));
+
+    Map<String, Object> description = (Map<String, Object>) properties.get("description");
+    assertEquals(description.get("type"), "keyword");
+    Map<String, Object> descriptionFields = (Map<String, Object>) description.get("fields");
+    // The source projection keeps .keyword; full text adds text and stemmed
+    assertEquals(descriptionFields.keySet(), Set.of("keyword", "text", "stemmed"));
+    assertEquals(((Map<String, Object>) descriptionFields.get("text")).get("analyzer"), "v3_text");
+
+    assertEquals(
+        ((Map<String, Object>) ((Map<String, Object>) properties.get("autocomplete")).get("fields"))
+            .keySet(),
+        Set.of("ngram"));
+
     properties.forEach(
         (root, mapping) -> {
           Object fields = ((Map<String, Object>) mapping).get("fields");
@@ -1729,28 +1746,22 @@ public abstract class KeywordSearchV3TestBase extends AbstractTestNGSpringContex
                     .noneMatch(
                         subfield ->
                             subfield.equals("delimited")
-                                || subfield.equals("ngram")
-                                || subfield.startsWith("wordGrams")),
+                                || subfield.startsWith("wordGrams")
+                                || (subfield.equals("ngram") && !"autocomplete".equals(root))),
                 root + " " + subfields.keySet());
           }
         });
 
     Map<String, Object> searchFields =
         (Map<String, Object>) ((Map<String, Object>) properties.get("_search")).get("properties");
-    Map<String, Object> description =
-        (Map<String, Object>) ((Map<String, Object>) searchFields.get("description")).get("fields");
-    assertEquals(description.keySet(), Set.of("text", "stemmed"));
-    assertEquals(((Map<String, Object>) description.get("text")).get("analyzer"), "v3_text");
-    Map<String, Object> entityName =
-        (Map<String, Object>) ((Map<String, Object>) searchFields.get("entityName")).get("fields");
-    assertEquals(entityName.keySet(), Set.of("text", "stemmed", "keyword"));
-    // The name keeps its stored casing for case-sensitive exact match
-    assertFalse(((Map<String, Object>) entityName.get("keyword")).containsKey("normalizer"));
-    assertEquals(
-        ((Map<String, Object>)
-                ((Map<String, Object>) searchFields.get("autocomplete")).get("fields"))
-            .keySet(),
-        Set.of("ngram"));
+    assertTrue(
+        searchFields.keySet().stream()
+            .noneMatch(
+                field ->
+                    field.equals("name")
+                        || field.equals("description")
+                        || field.equals("autocomplete")),
+        searchFields.keySet().toString());
   }
 
   @Test

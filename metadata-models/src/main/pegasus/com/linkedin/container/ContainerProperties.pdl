@@ -20,7 +20,7 @@ record ContainerProperties includes CustomProperties, ExternalReference {
     "enableAutocomplete": true,
     "boostScore": 10.0,
     "fieldNameAliases": [ "_entityName" ],
-    "searchLabel": "entityName"
+    "v3": { "searchLabel": "name" }
   }
   name: string
 
@@ -31,7 +31,7 @@ record ContainerProperties includes CustomProperties, ExternalReference {
     "fieldType": "WORD_GRAM",
     "enableAutocomplete": true,
     "boostScore": 10.0,
-    "searchLabel": "qualifiedName"
+    "v3": { "searchLabel": "qualifiedName" }
   }
   qualifiedName: optional string
 
@@ -41,7 +41,8 @@ record ContainerProperties includes CustomProperties, ExternalReference {
   @Searchable = {
     "fieldType": "TEXT",
     "hasValuesFieldName": "hasDescription",
-    "sanitizeRichText": true
+    "sanitizeRichText": true,
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 
@@ -63,7 +64,7 @@ record ContainerProperties includes CustomProperties, ExternalReference {
     "/time": {
       "fieldName": "createdAt",
       "fieldType": "DATETIME",
-      "searchLabel": "createdAt"
+      "v3": { "searchLabel": "createdAt" }
     }
   }
   created: optional TimeStamp
@@ -75,7 +76,7 @@ record ContainerProperties includes CustomProperties, ExternalReference {
     "/time": {
       "fieldName": "lastModifiedAt",
       "fieldType": "DATETIME",
-      "searchLabel": "lastModifiedAt"
+      "v3": { "searchLabel": "lastModifiedAt" }
     }
   }
   lastModified: optional TimeStamp

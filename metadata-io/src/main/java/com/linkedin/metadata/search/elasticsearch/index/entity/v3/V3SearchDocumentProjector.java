@@ -12,7 +12,10 @@ import com.linkedin.events.metadata.ChangeType;
 import com.linkedin.metadata.aspect.batch.MCLItem;
 import com.linkedin.metadata.models.AspectSpec;
 import com.linkedin.metadata.models.EntitySpec;
+import com.linkedin.metadata.models.SearchableFieldSpec;
+import com.linkedin.metadata.models.annotation.SearchableAnnotation;
 import com.linkedin.metadata.search.transformer.SearchDocumentTransformer;
+import com.linkedin.metadata.search.utils.ESUtils;
 import com.linkedin.mxe.SystemMetadata;
 import io.datahubproject.metadata.context.OperationContext;
 import java.util.Iterator;
@@ -67,6 +70,7 @@ public class V3SearchDocumentProjector {
     final ObjectNode projectedFields =
         SearchDocumentTransformer.handleRemoveFields(
             searchDocument.get().deepCopy(), previousSearchDocument.orElse(null));
+    omitV3ExcludedFields(aspectSpec, projectedFields);
 
     return Optional.of(
         buildProjectedAspect(
@@ -133,6 +137,21 @@ public class V3SearchDocumentProjector {
     } catch (Exception e) {
       throw propagate(
           "Failed to transform previous V3 aspect " + aspectSpec.getName() + " for " + urn, e);
+    }
+  }
+
+  private static void omitV3ExcludedFields(
+      @Nonnull final AspectSpec aspectSpec, @Nonnull final ObjectNode projectedFields) {
+    for (SearchableFieldSpec fieldSpec : aspectSpec.getSearchableFieldSpecs()) {
+      final SearchableAnnotation annotation = fieldSpec.getSearchableAnnotation();
+      if (!annotation.isV3Searchable()) {
+        projectedFields.remove(annotation.getFieldName());
+        annotation.getHasValuesFieldName().ifPresent(projectedFields::remove);
+        annotation.getNumValuesFieldName().ifPresent(projectedFields::remove);
+      }
+      if (!annotation.resolvedForV3().isIncludeSystemModifiedAt()) {
+        ESUtils.getSystemModifiedAtFieldName(fieldSpec).ifPresent(projectedFields::remove);
+      }
     }
   }
 

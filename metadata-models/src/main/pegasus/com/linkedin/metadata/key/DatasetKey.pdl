@@ -39,7 +39,7 @@ record DatasetKey {
     "addToFilters": true,
     "filterNameOverride": "Environment",
     "queryByDefault": false,
-    "searchLabel": "origin"
+    "v3": { "searchLabel": "origin" }
   }
   origin: FabricType
 }

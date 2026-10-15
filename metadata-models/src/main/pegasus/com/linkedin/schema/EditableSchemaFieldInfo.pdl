@@ -18,8 +18,9 @@ record EditableSchemaFieldInfo {
   @Searchable = {
     "fieldName": "editedFieldDescriptions",
     "fieldType": "TEXT",
-    "boostScore": 0.1,
-    "sanitizeRichText": true
+    "boostScore": 1.0,
+    "sanitizeRichText": true,
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 
@@ -36,7 +37,8 @@ record EditableSchemaFieldInfo {
     "/tags/*/tag": {
       "fieldName": "editedFieldTags",
       "fieldType": "URN",
-      "boostScore": 0.5
+      "boostScore": 0.5,
+      "v3": { "searchLabel": "tags" }
     },
     "/tags/*/attribution/time": {
         "fieldName": "editedFieldTagAttributionDates",
@@ -70,7 +72,8 @@ record EditableSchemaFieldInfo {
       "fieldType": "URN",
       "boostScore": 0.5,
       "includeSystemModifiedAt": true,
-      "systemModifiedAtFieldName": "schemaFieldTermsModifiedAt"
+      "systemModifiedAtFieldName": "schemaFieldTermsModifiedAt",
+      "v3": { "includeSystemModifiedAt": false, "searchLabel": "glossaryTerms" }
     },
     "/terms/*/attribution/time": {
         "fieldName": "editedFieldTermAttributionDates",

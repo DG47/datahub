@@ -778,4 +778,64 @@ public class SearchableAnnotationExtensionTest {
               + e.getMessage();
     }
   }
+
+  @Test
+  public void testV3OverlayReplacesTheLabelWithoutChangingV2() {
+    DataMap overlay = new DataMap();
+    overlay.put("searchLabel", "name");
+    DataMap annotationMap = new DataMap();
+    annotationMap.put("fieldType", "WORD_GRAM");
+    annotationMap.put("searchLabel", "entityName");
+    annotationMap.put("boostScore", 10.0);
+    annotationMap.put("includeSystemModifiedAt", true);
+    annotationMap.put("systemModifiedAtFieldName", "termsModifiedAt");
+    annotationMap.put("v3", overlay);
+
+    SearchableAnnotation annotation =
+        SearchableAnnotation.fromPegasusAnnotationObject(
+            annotationMap, "name", DataSchema.Type.STRING, "testField");
+
+    assertEquals(annotation.getSearchLabel().get(), "entityName");
+    assertTrue(annotation.isIncludeSystemModifiedAt());
+    assertEquals(annotation.getSystemModifiedAtFieldName().get(), "termsModifiedAt");
+    assertTrue(annotation.isV3Searchable());
+    assertEquals(annotation.resolvedForV3().getSearchLabel().get(), "name");
+    assertTrue(annotation.resolvedForV3().isIncludeSystemModifiedAt());
+  }
+
+  @Test
+  public void testV3OverlayTurnsOffTheSystemModifiedSidecar() {
+    DataMap overlay = new DataMap();
+    overlay.put("includeSystemModifiedAt", false);
+    DataMap annotationMap = new DataMap();
+    annotationMap.put("fieldType", "URN");
+    annotationMap.put("includeSystemModifiedAt", true);
+    annotationMap.put("systemModifiedAtFieldName", "termsModifiedAt");
+    annotationMap.put("v3", overlay);
+
+    SearchableAnnotation annotation =
+        SearchableAnnotation.fromPegasusAnnotationObject(
+            annotationMap, "glossaryTerms", DataSchema.Type.STRING, "testField");
+
+    assertTrue(annotation.isIncludeSystemModifiedAt());
+    assertEquals(annotation.getSystemModifiedAtFieldName().get(), "termsModifiedAt");
+    assertFalse(annotation.resolvedForV3().isIncludeSystemModifiedAt());
+    assertFalse(annotation.resolvedForV3().getSystemModifiedAtFieldName().isPresent());
+  }
+
+  @Test
+  public void testV3OverlayCanDisableSearch() {
+    DataMap overlay = new DataMap();
+    overlay.put("enabled", false);
+    DataMap annotationMap = new DataMap();
+    annotationMap.put("fieldType", "TEXT");
+    annotationMap.put("v3", overlay);
+
+    SearchableAnnotation annotation =
+        SearchableAnnotation.fromPegasusAnnotationObject(
+            annotationMap, "hidden", DataSchema.Type.STRING, "testField");
+
+    assertFalse(annotation.isV3Searchable());
+    assertTrue(annotation.isQueryByDefault());
+  }
 }

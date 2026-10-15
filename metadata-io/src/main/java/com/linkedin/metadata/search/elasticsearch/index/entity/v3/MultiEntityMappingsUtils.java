@@ -32,15 +32,15 @@ public class MultiEntityMappingsUtils {
   }
 
   /**
-   * Creates an alias mapping for _entityName that points to _search.entityName. This consolidates
-   * the _entityName handling logic used in multiple places.
+   * Creates an alias mapping for _entityName that points to the root field {@code name}. This
+   * consolidates the _entityName handling logic used in multiple places.
    *
    * @return Map containing the alias mapping for _entityName
    */
   public static Map<String, Object> createEntityNameAliasMapping() {
     Map<String, Object> aliasMapping = new HashMap<>();
     aliasMapping.put(TYPE, ALIAS_FIELD_TYPE);
-    aliasMapping.put(PATH, "_search.entityName");
+    aliasMapping.put(PATH, V3SearchFields.path(V3SearchFields.ENTITY_NAME));
     return aliasMapping;
   }
 
@@ -55,15 +55,15 @@ public class MultiEntityMappingsUtils {
   }
 
   /**
-   * Creates an alias mapping for _qualifiedName that points to _search.qualifiedName. This
-   * consolidates the _qualifiedName handling logic used in multiple places.
+   * Creates an alias mapping for _qualifiedName that points to the root field {@code
+   * qualifiedName}. This consolidates the _qualifiedName handling logic used in multiple places.
    *
    * @return Map containing the alias mapping for _qualifiedName
    */
   public static Map<String, Object> createQualifiedNameAliasMapping() {
     Map<String, Object> aliasMapping = new HashMap<>();
     aliasMapping.put(TYPE, ALIAS_FIELD_TYPE);
-    aliasMapping.put(PATH, "_search.qualifiedName");
+    aliasMapping.put(PATH, V3SearchFields.path(V3SearchFields.QUALIFIED_NAME));
     return aliasMapping;
   }
 
@@ -98,7 +98,10 @@ public class MultiEntityMappingsUtils {
    */
   public static boolean hasOtherCopyToDestinations(SearchableFieldSpec searchableFieldSpec) {
     com.linkedin.metadata.models.annotation.SearchableAnnotation annotation =
-        searchableFieldSpec.getSearchableAnnotation();
+        searchableFieldSpec.getSearchableAnnotation().resolvedForV3();
+    if (!annotation.isV3Searchable()) {
+      return false;
+    }
 
     // Check for searchLabel
     if (annotation.getSearchLabel().isPresent()
@@ -343,15 +346,15 @@ public class MultiEntityMappingsUtils {
   }
 
   /**
-   * Builds the _search section with all copy_to destination fields: the labels the models declare,
-   * typed from their source fields, and every other shared field a root field copies into. A shared
-   * field that full-text search reads gets the analyzed shape of {@link V3SearchFields#mapping};
-   * the others stay keywords, dates or numbers.
+   * Builds the shared search fields: the labels the models declare, typed from their source fields,
+   * and every other shared field a root field copies into. A shared field that full-text search
+   * reads gets the analyzed shape of {@link V3SearchFields#mapping}; the others stay keywords,
+   * dates or numbers. The caller places these fields at the document root.
    *
    * @param entitySpecs collection of entity specs to analyze
    * @param mappings existing mappings to analyze for copy_to destinations
    * @param partialNgramConfig engine-specific search-as-you-type shape of the autocomplete field
-   * @return Map containing the _search section properties
+   * @return Map whose properties are the shared root fields
    */
   public static Map<String, Object> buildSearchSection(
       Collection<EntitySpec> entitySpecs,
@@ -360,12 +363,16 @@ public class MultiEntityMappingsUtils {
     Map<String, Object> searchProperties = new HashMap<>();
     Map<String, Set<String>> searchFieldTypes = new HashMap<>();
 
-    // Collect all copy_to destinations that point to _search.* fields
+    // Collect every shared field a source copies into. Labels are root fields; a destination
+    // written as _search.<name> is the same field.
     for (EntitySpec entitySpec : entitySpecs) {
       for (AspectSpec aspectSpec : entitySpec.getAspectSpecs()) {
         for (SearchableFieldSpec fieldSpec : aspectSpec.getSearchableFieldSpecs()) {
           com.linkedin.metadata.models.annotation.SearchableAnnotation annotation =
-              fieldSpec.getSearchableAnnotation();
+              fieldSpec.getSearchableAnnotation().resolvedForV3();
+          if (!annotation.isV3Searchable()) {
+            continue;
+          }
 
           // Check for search label destinations
           annotation
@@ -447,7 +454,7 @@ public class MultiEntityMappingsUtils {
     return searchSection;
   }
 
-  /** Names of the {@code _search} fields that root fields copy into. */
+  /** Names of the shared root fields that other fields copy into. */
   @SuppressWarnings("unchecked")
   private static Set<String> rootCopyToSearchFields(Map<String, Object> mappings) {
     Set<String> destinations = new HashSet<>();
@@ -467,8 +474,12 @@ public class MultiEntityMappingsUtils {
               : copyTo == null ? List.of() : List.of(copyTo);
       copyToFields.stream()
           .map(String::valueOf)
-          .filter(destination -> destination.startsWith(prefix))
-          .map(destination -> destination.substring(prefix.length()))
+          .map(
+              destination ->
+                  destination.startsWith(prefix)
+                      ? destination.substring(prefix.length())
+                      : destination)
+          .filter(destination -> !destination.isEmpty() && !destination.startsWith("_"))
           .forEach(destinations::add);
     }
     return destinations;

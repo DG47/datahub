@@ -856,7 +856,8 @@ public class SearchRequestHandlerTest extends AbstractTestNGSpringContextTests {
                   .build())
           .build();
 
-  // The root fields of _search.columns, an array each, as long as the dataset's schema
+  // Schema-field arrays. They are searched through their labels and never fetched: a fetch cannot
+  // cut them short, so a dataset with thousands of fields would send all of them with every hit.
   private static final Set<String> COLUMN_ARRAYS =
       Set.of(
           "fieldPaths",
@@ -900,9 +901,9 @@ public class SearchRequestHandlerTest extends AbstractTestNGSpringContextTests {
     SearchSourceBuilder v3 = getDatasetSearchSource(fulltext, V3_READ_CONFIG, "test query");
 
     String query = v3.query().toString();
-    assertTrue(query.contains("_search.entityName.text"), query);
-    assertTrue(query.contains("_search.columns.text"), query);
-    assertTrue(query.contains("_search.columns.stemmed"), query);
+    assertTrue(query.contains("name.text"), query);
+    assertTrue(query.contains("columns.text"), query);
+    assertTrue(query.contains("columns.stemmed"), query);
     assertTrue(query.contains("_search.structuredProperties.text"), query);
     assertFalse(query.contains(".delimited"), query);
     assertNull(v3.highlighter());
@@ -1033,7 +1034,7 @@ public class SearchRequestHandlerTest extends AbstractTestNGSpringContextTests {
   }
 
   /**
-   * Of _search.other, V3 matched fields fetch only what names or tags an entity: a document's text,
+   * Of other, V3 matched fields fetch only what names or tags an entity: a document's text,
    * semantic text and custom properties are searched but never fetched, even when highlighting
    * names them.
    */
@@ -1055,7 +1056,7 @@ public class SearchRequestHandlerTest extends AbstractTestNGSpringContextTests {
         handler.getSearchRequest(fulltext, "runbook", null, null, 0, 10, List.of()).source();
 
     String query = source.query().toString();
-    assertTrue(query.contains("_search.other.text"), query);
+    assertTrue(query.contains("other.text"), query);
     Set<String> fetched = Set.of(source.fetchSource().includes());
     assertTrue(fetched.containsAll(Set.of("urn", "title")), fetched.toString());
     assertTrue(Collections.disjoint(fetched, freeText), fetched.toString());

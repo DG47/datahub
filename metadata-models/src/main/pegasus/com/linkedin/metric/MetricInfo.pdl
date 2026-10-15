@@ -21,7 +21,7 @@ record MetricInfo includes ExternalReference {
     "enableAutocomplete": true,
     "boostScore": 10.0,
     "fieldNameAliases": [ "_entityName" ],
-    "searchLabel": "entityName"
+    "v3": { "searchLabel": "name" }
   }
   name: string
 
@@ -30,7 +30,8 @@ record MetricInfo includes ExternalReference {
    */
   @Searchable = {
     "fieldType": "TEXT",
-    "hasValuesFieldName": "hasDescription"
+    "hasValuesFieldName": "hasDescription",
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 
@@ -42,7 +43,7 @@ record MetricInfo includes ExternalReference {
     "/time": {
       "fieldName": "createdAt",
       "fieldType": "DATETIME",
-      "searchLabel": "createdAt"
+      "v3": { "searchLabel": "createdAt" }
     }
   }
   created: optional AuditStamp
@@ -55,7 +56,7 @@ record MetricInfo includes ExternalReference {
     "/time": {
       "fieldName": "lastModifiedAt",
       "fieldType": "DATETIME",
-      "searchLabel": "lastModifiedAt"
+      "v3": { "searchLabel": "lastModifiedAt" }
     }
   }
   lastModified: optional AuditStamp

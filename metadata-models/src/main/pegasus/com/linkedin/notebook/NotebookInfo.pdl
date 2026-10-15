@@ -22,7 +22,7 @@ record NotebookInfo includes CustomProperties, ExternalReference {
     "enableAutocomplete": true,
     "boostScore": 10.0,
     "fieldNameAliases": [ "_entityName" ],
-    "searchLabel": "entityName"
+    "v3": { "searchLabel": "name" }
   }
   title: string
 
@@ -32,7 +32,8 @@ record NotebookInfo includes CustomProperties, ExternalReference {
   @Searchable = {
     "fieldType": "TEXT",
     "hasValuesFieldName": "hasDescription",
-    "sanitizeRichText": true
+    "sanitizeRichText": true,
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 

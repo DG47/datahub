@@ -660,7 +660,7 @@ public class AutocompleteRequestHandlerTest {
   }
 
   /**
-   * Deliberate V3 change: autocomplete reads the shared _search.autocomplete field, which every
+   * Deliberate V3 change: autocomplete reads the shared autocomplete field, which every
    * enableAutocomplete field copies into, and takes the suggestion from the fetched root values,
    * the name first, so it sets no highlighter.
    */
@@ -685,15 +685,14 @@ public class AutocompleteRequestHandlerTest {
     assertEquals(
         boolPrefix.fields().keySet(),
         Set.of(
-            "_search.autocomplete.ngram",
-            "_search.autocomplete.ngram._2gram",
-            "_search.autocomplete.ngram._3gram",
-            "_search.autocomplete.ngram._4gram"));
+            "autocomplete.ngram",
+            "autocomplete.ngram._2gram",
+            "autocomplete.ngram._3gram",
+            "autocomplete.ngram._4gram"));
     assertEquals(
-        only(clauses, MatchPhrasePrefixQueryBuilder.class).fieldName(),
-        "_search.autocomplete.ngram");
+        only(clauses, MatchPhrasePrefixQueryBuilder.class).fieldName(), "autocomplete.ngram");
     TermQueryBuilder exact = only(clauses, TermQueryBuilder.class);
-    assertEquals(exact.fieldName(), "_search.autocomplete");
+    assertEquals(exact.fieldName(), "autocomplete");
     assertEquals(exact.value(), "ord");
     assertNull(v3.highlighter());
     List<String> fetched = List.of(v3.fetchSource().includes());
@@ -766,8 +765,7 @@ public class AutocompleteRequestHandlerTest {
             .source();
 
     assertEquals(
-        only(v3AutocompleteClauses(source), TermQueryBuilder.class).fieldName(),
-        "_search.autocomplete");
+        only(v3AutocompleteClauses(source), TermQueryBuilder.class).fieldName(), "autocomplete");
   }
 
   /**
@@ -1363,12 +1361,16 @@ public class AutocompleteRequestHandlerTest {
     when(annotation1.getFieldName()).thenReturn("field1");
     when(annotation1.getBoostScore()).thenReturn(3.0);
     when(annotation1.isEnableAutocomplete()).thenReturn(true);
+    when(annotation1.isV3Searchable()).thenReturn(true);
+    when(annotation1.resolvedForV3()).thenReturn(annotation1);
     when(fieldSpec1.getSearchableAnnotation()).thenReturn(annotation1);
 
     SearchableAnnotation annotation2 = mock(SearchableAnnotation.class);
     when(annotation2.getFieldName()).thenReturn("field2");
     when(annotation2.getBoostScore()).thenReturn(1.5);
     when(annotation2.isEnableAutocomplete()).thenReturn(true);
+    when(annotation2.isV3Searchable()).thenReturn(true);
+    when(annotation2.resolvedForV3()).thenReturn(annotation2);
     when(fieldSpec2.getSearchableAnnotation()).thenReturn(annotation2);
 
     when(mockSpec.getSearchableFieldSpecs()).thenReturn(List.of(fieldSpec1, fieldSpec2));

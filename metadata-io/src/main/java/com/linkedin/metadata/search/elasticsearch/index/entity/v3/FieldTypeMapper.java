@@ -474,8 +474,8 @@ public class FieldTypeMapper {
   /**
    * The root mapping of every text, word-gram and URN field: a normalized keyword, as V2 maps text
    * roots, with a {@code .keyword} subfield that keeps the stored casing for filters, facets and
-   * sorts. Full-text search and autocomplete read the shared {@code _search} fields instead (see
-   * {@link V3SearchFields}), so the root carries no analyzed subfields.
+   * sorts. Full-text search and autocomplete read the shared root fields (see {@link
+   * V3SearchFields}), whose analyzed subfields are merged onto this projection.
    */
   @Nonnull
   private static Map<String, Object> getMappingsForSearchText() {

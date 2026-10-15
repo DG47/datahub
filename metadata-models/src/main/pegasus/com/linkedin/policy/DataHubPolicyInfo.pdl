@@ -13,7 +13,9 @@ record DataHubPolicyInfo {
    * Display name of the Policy
    */
   @Searchable = {
-    "fieldType": "TEXT_PARTIAL"
+    "fieldType": "TEXT_PARTIAL",
+    "boostScore": 10.0,
+    "v3": { "searchLabel": "name" }
   }
   displayName: string
 
@@ -21,7 +23,8 @@ record DataHubPolicyInfo {
    * Description of the Policy
    */
   @Searchable = {
-    "fieldType": "TEXT"
+    "fieldType": "TEXT",
+    "v3": { "searchLabel": "description" }
   }
   description: string
 

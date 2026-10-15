@@ -39,6 +39,7 @@ record IncidentInfo {
   @Searchable = {
     "fieldType": "WORD_GRAM",
     "boostScore": 10.0,
+    "v3": { "searchLabel": "name" }
   }
   title: optional string
 
@@ -47,6 +48,7 @@ record IncidentInfo {
   */
   @Searchable = {
     "fieldType": "TEXT",
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 

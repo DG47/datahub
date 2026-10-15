@@ -2,6 +2,7 @@ package com.linkedin.metadata.models.annotation;
 
 import static org.testng.Assert.assertThrows;
 
+import com.linkedin.data.DataMap;
 import com.linkedin.data.schema.DataSchema;
 import com.linkedin.metadata.models.ModelValidationException;
 import java.util.ArrayList;
@@ -350,7 +351,122 @@ public class SearchableAnnotationValidatorTest {
         () -> SearchableAnnotationValidator.validateCrossAnnotationCompatibility(fields));
   }
 
+  @Test
+  public void testSameSearchLabelRequiresTheSameBoost() {
+    List<SearchableAnnotationValidator.AnnotatedField> fields = new ArrayList<>();
+    fields.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            createAnnotation("WORD_GRAM", Optional.of("entityName"), 10.0),
+            DataSchema.Type.STRING,
+            "dataset.datasetProperties.name"));
+    fields.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            createAnnotation("WORD_GRAM", Optional.of("entityName"), 8.0),
+            DataSchema.Type.STRING,
+            "mlFeature.mlFeatureKey.name"));
+
+    assertThrows(
+        ModelValidationException.class,
+        () -> SearchableAnnotationValidator.validateCrossAnnotationCompatibility(fields));
+  }
+
+  @Test
+  public void testSemanticBucketsShareOneBoost() {
+    List<SearchableAnnotationValidator.AnnotatedField> names = new ArrayList<>();
+    names.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            createAnnotation("WORD_GRAM", Optional.of("entityName"), 10.0),
+            DataSchema.Type.STRING,
+            "dataset.datasetProperties.name"));
+    names.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            createAnnotation("TEXT_PARTIAL", Optional.of("entityName"), 10.0),
+            DataSchema.Type.STRING,
+            "dataset.editableDatasetProperties.editedName"));
+    SearchableAnnotationValidator.validateCrossAnnotationCompatibility(names);
+
+    List<SearchableAnnotationValidator.AnnotatedField> descriptions = new ArrayList<>();
+    descriptions.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            createAnnotation("TEXT", Optional.of("description"), 1.0),
+            DataSchema.Type.STRING,
+            "dataset.datasetProperties.description"));
+    descriptions.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            createAnnotation("TEXT", Optional.of("description"), 1.0),
+            DataSchema.Type.STRING,
+            "schema.schemaField.fieldDescriptions"));
+    SearchableAnnotationValidator.validateCrossAnnotationCompatibility(descriptions);
+
+    List<SearchableAnnotationValidator.AnnotatedField> tags = new ArrayList<>();
+    tags.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            createAnnotation("URN", Optional.of("tags"), 0.5),
+            DataSchema.Type.STRING,
+            "dataset.globalTags.tags"));
+    tags.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            createAnnotation("URN", Optional.of("tags"), 0.5),
+            DataSchema.Type.STRING,
+            "schema.schemaField.fieldTags"));
+    SearchableAnnotationValidator.validateCrossAnnotationCompatibility(tags);
+
+    List<SearchableAnnotationValidator.AnnotatedField> created = new ArrayList<>();
+    created.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            createAnnotation("DATETIME", Optional.of("createdAt"), 1.0),
+            DataSchema.Type.LONG,
+            "dataset.datasetProperties.created"));
+    created.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            createAnnotation("DATETIME", Optional.of("createdAt"), 1.0),
+            DataSchema.Type.LONG,
+            "chart.chartInfo.lastModified"));
+    SearchableAnnotationValidator.validateCrossAnnotationCompatibility(created);
+  }
+
+  @Test
+  public void testV3LabelsShareOneBoost() {
+    List<SearchableAnnotationValidator.AnnotatedField> fields = new ArrayList<>();
+    fields.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            v3Annotation("entityName", "name", 10.0), DataSchema.Type.STRING, "dataset.name"));
+    fields.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            v3Annotation("title", "name", 10.0), DataSchema.Type.STRING, "chart.title"));
+    SearchableAnnotationValidator.validateCrossAnnotationCompatibility(fields);
+
+    List<SearchableAnnotationValidator.AnnotatedField> conflicting = new ArrayList<>();
+    conflicting.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            v3Annotation("entityName", "name", 10.0), DataSchema.Type.STRING, "dataset.name"));
+    conflicting.add(
+        new SearchableAnnotationValidator.AnnotatedField(
+            v3Annotation("title", "name", 1.0), DataSchema.Type.STRING, "chart.title"));
+    assertThrows(
+        ModelValidationException.class,
+        () -> SearchableAnnotationValidator.validateCrossAnnotationCompatibility(conflicting));
+  }
+
+  private SearchableAnnotation v3Annotation(
+      String searchLabel, String v3SearchLabel, double boostScore) {
+    DataMap overlay = new DataMap();
+    overlay.put("searchLabel", v3SearchLabel);
+    DataMap annotationMap = new DataMap();
+    annotationMap.put("fieldType", "TEXT");
+    annotationMap.put("searchLabel", searchLabel);
+    annotationMap.put("boostScore", boostScore);
+    annotationMap.put("v3", overlay);
+    return SearchableAnnotation.fromPegasusAnnotationObject(
+        annotationMap, "field", DataSchema.Type.STRING, "test");
+  }
+
   private SearchableAnnotation createAnnotation(String fieldType, Optional<String> searchLabel) {
+    return createAnnotation(fieldType, searchLabel, 1.0);
+  }
+
+  private SearchableAnnotation createAnnotation(
+      String fieldType, Optional<String> searchLabel, double boostScore) {
     return new SearchableAnnotation(
         "testField",
         SearchableAnnotation.FieldType.valueOf(fieldType),
@@ -360,7 +476,7 @@ public class SearchableAnnotationValidatorTest {
         false, // addHasValuesToFilters
         Optional.empty(), // filterNameOverride
         Optional.empty(), // hasValuesFilterNameOverride
-        1.0, // boostScore
+        boostScore, // boostScore
         Optional.empty(), // hasValuesFieldName
         Optional.empty(), // numValuesFieldName
         java.util.Map.of(), // weightsPerFieldValue

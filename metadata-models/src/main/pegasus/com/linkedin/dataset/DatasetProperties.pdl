@@ -21,7 +21,7 @@ record DatasetProperties includes CustomProperties, ExternalReference {
     "enableAutocomplete": true,
     "boostScore": 10.0,
     "fieldNameAliases": [ "_entityName" ],
-    "searchLabel": "entityName"
+    "v3": { "searchLabel": "name" }
   }
   name: optional string
 
@@ -33,7 +33,7 @@ record DatasetProperties includes CustomProperties, ExternalReference {
     "addToFilters": false,
     "enableAutocomplete": true,
     "boostScore": 10.0,
-    "searchLabel": "qualifiedName"
+    "v3": { "searchLabel": "qualifiedName" }
   }
   qualifiedName: optional string
 
@@ -43,7 +43,8 @@ record DatasetProperties includes CustomProperties, ExternalReference {
   @Searchable = {
     "fieldType": "TEXT",
     "hasValuesFieldName": "hasDescription",
-    "sanitizeRichText": true
+    "sanitizeRichText": true,
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 
@@ -60,7 +61,7 @@ record DatasetProperties includes CustomProperties, ExternalReference {
     "/time": {
       "fieldName": "createdAt",
       "fieldType": "DATETIME",
-      "searchLabel": "createdAt"
+      "v3": { "searchLabel": "createdAt" }
     }
   }
   created: optional TimeStamp
@@ -72,7 +73,7 @@ record DatasetProperties includes CustomProperties, ExternalReference {
     "/time": {
       "fieldName": "lastModifiedAt",
       "fieldType": "DATETIME",
-      "searchLabel": "lastModifiedAt"
+      "v3": { "searchLabel": "lastModifiedAt" }
     }
   }
   lastModified: optional TimeStamp

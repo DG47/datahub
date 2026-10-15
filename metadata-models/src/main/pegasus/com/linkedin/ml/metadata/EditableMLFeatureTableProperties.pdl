@@ -13,7 +13,8 @@ record EditableMLFeatureTableProperties {
    */
   @Searchable = {
     "fieldType": "TEXT",
-    "fieldName": "editedDescription"
+    "fieldName": "editedDescription",
+    "v3": { "searchLabel": "description" }
   }
   description: optional string
 }

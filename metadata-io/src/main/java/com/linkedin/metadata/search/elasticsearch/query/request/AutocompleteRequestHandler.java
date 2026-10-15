@@ -54,7 +54,7 @@ import org.opensearch.search.fetch.subphase.highlight.HighlightBuilder;
 public class AutocompleteRequestHandler extends BaseRequestHandler {
 
   private final List<Pair<String, String>> _defaultAutocompleteFields;
-  // Set when keyword reads go to Search V3: the root fields feeding _search.autocomplete, in the
+  // Set when keyword reads go to Search V3: the root fields feeding autocomplete, in the
   // order a suggestion is taken from
   @Nullable private final List<String> v3AutocompleteFields;
   private final Map<String, Set<SearchableAnnotation.FieldType>> searchableFieldTypes;
@@ -399,15 +399,15 @@ public class AutocompleteRequestHandler extends BaseRequestHandler {
         && V3_IGNORED_FIELD_CONFIGURATIONS.add(fieldConfigLabel)) {
       log.warn(
           "Field configuration {} changes the autocomplete fields, which Search V3 autocomplete "
-              + "does not apply: it reads the shared _search.autocomplete field",
+              + "does not apply: it reads the shared autocomplete field",
           fieldConfigLabel);
     }
   }
 
   /**
-   * The Search V3 autocomplete query: without a field, the shared {@code _search.autocomplete}
-   * field, which holds every field with {@code enableAutocomplete} and matches a prefix of any word
-   * of them; with a field, a prefix of that root field's whole value, since root fields are not
+   * The Search V3 autocomplete query: without a field, the shared root field {@code autocomplete},
+   * which holds every field with {@code enableAutocomplete} and matches a prefix of any word of
+   * them; with a field, a prefix of that root field's whole value, since root fields are not
    * analyzed. A requested field that is not a string matches nothing.
    */
   private BoolQueryBuilder getV3Query(
